@@ -11,8 +11,8 @@
     <dependencies>
         <dependency>
             <groupId>net.noyark</groupId>
-            <artifactId>empower-classcoder</artifactId>
-            <version>0.0.4</version>
+            <artifactId>empower-apis</artifactId>
+            <version>0.0.8</version>
         </dependency>
         <dependency>
             <groupId>cn.nukkit</groupId>
