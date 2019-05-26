@@ -23,6 +23,10 @@ import java.util.Map;
 
 public class DecodePluginManager {
 
+    static {
+        pluginManager = new DecodePluginManager();
+    }
+
     private Map<File,PluginDescription> descriptionMap = new HashMap<>();
 
     private RunMain main = RunMain.getMain();
@@ -36,6 +40,14 @@ public class DecodePluginManager {
     private Map<String,File> mapper = new HashMap<>();
 
     private List<Plugin> allPlugins = new ArrayList<>();
+
+    private static DecodePluginManager pluginManager;
+
+
+    public static DecodePluginManager getPluginManager() {
+        return pluginManager;
+    }
+
     /**
      * 加载插件 策略 递归依赖
      * 一个插件->看依赖->依赖的依赖

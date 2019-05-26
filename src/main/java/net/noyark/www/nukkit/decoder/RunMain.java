@@ -8,12 +8,12 @@ public class RunMain extends PluginBase {
 
     @Override
     public void onLoad() {
-
-        super.onLoad();
+        DecodePluginManager.getPluginManager().loadPlugins();//加载插件
     }
 
     @Override
     public void onEnable() {
+        
         super.onEnable();
     }
 
