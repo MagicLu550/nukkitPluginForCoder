@@ -11,6 +11,7 @@ import cn.nukkit.plugin.PluginManager;
 import cn.nukkit.utils.Config;
 import cn.nukkit.utils.PluginException;
 import net.noyark.www.utils.api.Pool;
+import net.noyark.www.utils.encode.Util;
 
 import java.io.File;
 import java.io.InputStream;
@@ -31,6 +32,8 @@ public class DecodePluginManager  extends PluginManager{
 
     public DecodePluginManager(Server server, CommandMap map){
         super(server,(SimpleCommandMap) map);
+        PLUGIN_FILE = new File(main.getDataFolder()+"/plugins/");
+        KEY_FILE = new File(main.getDataFolder()+"/key/");
     }
 
 
@@ -38,9 +41,9 @@ public class DecodePluginManager  extends PluginManager{
 
     private RunMain main = RunMain.getMain();
 
-    private File PLUGIN_FILE = new File(main.getDataFolder()+"/plugins/");
+    private File PLUGIN_FILE;
 
-    private File KEY_FILE = new File(main.getDataFolder()+"/key/");
+    private File KEY_FILE;
 
     private List<String> loaded = new ArrayList<>();
 
@@ -61,7 +64,9 @@ public class DecodePluginManager  extends PluginManager{
         File[] plugins = PLUGIN_FILE.listFiles();
         if(plugins!=null){
             for(File plugin:plugins){
-                loadDecodePlugin(plugin.toString());
+                if(plugin.toString().endsWith(".jar")) {
+                    loadDecodePlugin(plugin.toString());
+                }
             }
         }
     }
@@ -73,7 +78,9 @@ public class DecodePluginManager  extends PluginManager{
         File[] plugins = PLUGIN_FILE.listFiles();
         if(plugins!=null){
             for(File plugin:plugins){
-                getDescription(plugin.toString());
+                if(plugin.toString().endsWith(".jar")) {
+                    getDescription(plugin.toString());
+                }
             }
         }
     }
@@ -96,7 +103,11 @@ public class DecodePluginManager  extends PluginManager{
 
     public void loadDecodePlugin(String fileName){
         try{
-            PluginDescription description = descriptionMap.get(fileName);
+            PluginDescription description = descriptionMap.get(new File(fileName));
+            if(!description.getCompatibleAPIs().contains(main.getServer().getApiVersion())){
+                main.getLogger().error("无法加载插件:api版本无法兼容");
+                return;
+            }
             String thisName = description.getName();
             if(!loaded.contains(thisName)){
                 String main_class = description.getMain();
@@ -105,7 +116,7 @@ public class DecodePluginManager  extends PluginManager{
                 Config config = new Config(Config.YAML);
                 //稍后重构，换成指定配置文件
                 config.load(in);
-                String keyFile = KEY_FILE+config.getString("key");
+                String keyFile = KEY_FILE+"/"+config.getString("key");
                 Class<?> mainClass = Pool.getClassCoder().getClassInJar(fileName,main_class,keyFile,this.getClass().getClassLoader());
                 List<String> dependNames = description.getSoftDepend();
                 dependNames.addAll(description.getDepend());
@@ -132,12 +143,11 @@ public class DecodePluginManager  extends PluginManager{
         }catch (ClassCastException e3){
             throw new PluginException("the plugin must extends the PluginBase",e3);
         }catch (Exception e){
-            throw new PluginException("unknown exception");
+            throw new PluginException("unknown exception",e);
         }
     }
 
     public PluginDescription getDescription(String fileName){
-
         PluginDescription pluginDescription = RunMain.getMain().getPluginLoader().getPluginDescription(fileName);
         descriptionMap.put(new File(fileName),pluginDescription);
         List<Permission> permissions = pluginDescription.getPermissions();

@@ -3,5 +3,6 @@ author: magiclu550
 website: magic.noyark.net
 main: net.noyark.www.nukkit.decoder.RunMain
 version: 0.0.1
+api: ["1.0.8"]
 description: This is the empower decoder for nukkit @net.noyark.www.PluginEmpowerSystem
 load: STARTUP

@@ -5,6 +5,7 @@ import cn.nukkit.event.Listener;
 import cn.nukkit.event.level.LevelLoadEvent;
 import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.plugin.PluginLoadOrder;
+import net.noyark.www.utils.encode.Util;
 
 import java.util.List;
 
@@ -16,13 +17,14 @@ public class RunMain extends PluginBase implements Listener {
 
     @Override
     public void onLoad() {
+        main = this;
         decodePluginManager = new DecodePluginManager(this.getServer(),this.getServer().getCommandMap());
         decodePluginManager.loadPlugins();//加载全部插件
     }
 
     @Override
     public void onEnable() {
-        main = this;
+        this.getServer().getPluginManager().registerEvents(this,this);
         List<PluginBase> plugins = decodePluginManager.getAllPlugins();
         for(PluginBase plugin:plugins){
             if(plugin.getDescription().getOrder().equals(PluginLoadOrder.STARTUP)){

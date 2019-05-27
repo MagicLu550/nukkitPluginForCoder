@@ -3,7 +3,7 @@
     <output-path>$USER_HOME$/Downloads/plugins</output-path>
     <root id="archive" name="dc4n.jar">
       <element id="module-output" name="nukkitPluginForCoder" />
-      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/net/noyark/empower-apis/0.0.8/empower-apis-0.0.8.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/test_version.jar" path-in-jar="/" />
     </root>
   </artifact>
 </component>

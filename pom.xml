@@ -10,11 +10,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>net.noyark</groupId>
-            <artifactId>empower-apis</artifactId>
-            <version>0.0.8</version>
-        </dependency>
-        <dependency>
             <groupId>cn.nukkit</groupId>
             <artifactId>nukkit</artifactId>
             <version>1.0</version>
