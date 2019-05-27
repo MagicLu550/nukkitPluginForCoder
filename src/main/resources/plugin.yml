@@ -1,0 +1,7 @@
+name: nukkitPluginForCoder
+author: magiclu550
+website: magic.noyark.net
+main: net.noyark.www.nukkit.decoder
+version: 0.0.1
+description: This is the empower decoder for nukkit @net.noyark.www.PluginEmpowerSystem
+load: STARTUP

@@ -1,19 +1,24 @@
 package net.noyark.www.nukkit.decoder;
 
-import cn.nukkit.plugin.Plugin;
+import cn.nukkit.Server;
+import cn.nukkit.command.CommandMap;
+import cn.nukkit.command.PluginCommand;
+import cn.nukkit.command.SimpleCommandMap;
+import cn.nukkit.permission.Permission;
 import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.plugin.PluginDescription;
+import cn.nukkit.plugin.PluginManager;
 import cn.nukkit.utils.Config;
 import cn.nukkit.utils.PluginException;
 import net.noyark.www.utils.api.Pool;
 
 import java.io.File;
-import java.net.URL;
-import java.net.URLClassLoader;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.jar.JarFile;
 
 /**
  * 首先加载plugin.yml，接着加载插件
@@ -21,11 +26,13 @@ import java.util.Map;
  * 记录完接着继续加载插件，发现插件已经记录就不再加载
  */
 
-public class DecodePluginManager {
+public class DecodePluginManager  extends PluginManager{
 
-    static {
-        pluginManager = new DecodePluginManager();
+
+    public DecodePluginManager(Server server, CommandMap map){
+        super(server,(SimpleCommandMap) map);
     }
+
 
     private Map<File,PluginDescription> descriptionMap = new HashMap<>();
 
@@ -39,14 +46,9 @@ public class DecodePluginManager {
 
     private Map<String,File> mapper = new HashMap<>();
 
-    private List<Plugin> allPlugins = new ArrayList<>();
-
-    private static DecodePluginManager pluginManager;
+    private List<PluginBase> allPlugins = new ArrayList<>();
 
 
-    public static DecodePluginManager getPluginManager() {
-        return pluginManager;
-    }
 
     /**
      * 加载插件 策略 递归依赖
@@ -59,7 +61,7 @@ public class DecodePluginManager {
         File[] plugins = PLUGIN_FILE.listFiles();
         if(plugins!=null){
             for(File plugin:plugins){
-                loadPlugin(plugin.toString());
+                loadDecodePlugin(plugin.toString());
             }
         }
     }
@@ -92,31 +94,35 @@ public class DecodePluginManager {
      * @return
      */
 
-    public void loadPlugin(String fileName){
+    public void loadDecodePlugin(String fileName){
         try{
             PluginDescription description = descriptionMap.get(fileName);
             String thisName = description.getName();
             if(!loaded.contains(thisName)){
                 String main_class = description.getMain();
-                URL url = new File(fileName).toURI().toURL();
-                URLClassLoader classLoader = new URLClassLoader(new URL[]{url});
+                JarFile file = new JarFile(fileName);
+                InputStream in = file.getInputStream(file.getEntry("plugin.yml"));
                 Config config = new Config(Config.YAML);
                 //稍后重构，换成指定配置文件
-                config.load(classLoader.getResourceAsStream("plugin.yml"));
+                config.load(in);
                 String keyFile = KEY_FILE+config.getString("key");
                 Class<?> mainClass = Pool.getClassCoder().getClassInJar(fileName,main_class,keyFile,this.getClass().getClassLoader());
                 List<String> dependNames = description.getSoftDepend();
                 dependNames.addAll(description.getDepend());
                 dependNames.addAll(description.getLoadBefore());
                 for(String name:dependNames){
-                    loadPlugin(mapper.get(name).toString());//递归依赖
+                    loadDecodePlugin(mapper.get(name).toString());//递归依赖
                 }
                 PluginBase base = (PluginBase) mainClass.newInstance();
                 base.init(main.getPluginLoader(),main.getServer(),description,new File(main.getServer().getFilePath()+"/"+description.getName()),new File(fileName));
                 base.onLoad();
-                main.getLogger().info(base.getName()+"is starting!");
+                main.getLogger().info(base.getName()+"is starting! version "+description.getVersion());
                 loaded.add(thisName);
+                List<PluginCommand> commands = parseYamlCommands(base);
                 allPlugins.add(base);
+                if (!commands.isEmpty()) {
+                    main.getServer().getCommandMap().registerAll(base.getDescription().getName(),commands);
+                }
             }
             //这里找依赖
         }catch (InstantiationException e1){
@@ -131,9 +137,19 @@ public class DecodePluginManager {
     }
 
     public PluginDescription getDescription(String fileName){
+
         PluginDescription pluginDescription = RunMain.getMain().getPluginLoader().getPluginDescription(fileName);
         descriptionMap.put(new File(fileName),pluginDescription);
+        List<Permission> permissions = pluginDescription.getPermissions();
+        //添加permession
+        for(Permission permission:permissions){
+            main.getServer().getPluginManager().addPermission(permission);
+        }
         return pluginDescription;
     }
 
+
+    public List<PluginBase> getAllPlugins() {
+        return allPlugins;
+    }
 }

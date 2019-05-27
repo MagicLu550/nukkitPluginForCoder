@@ -7,11 +7,11 @@ import java.util.*
 class LoadMapper constructor(var mapper:Map<File,PluginDescription>){
 
     fun loadMapper() : Map<String,File>{
-        var name_file = HashMap<String,File>()
+        var nameFile = HashMap<String,File>()
         for(entry in mapper.entries){
-            name_file.put(entry.value.name,entry.key)
+            nameFile.put(entry.value.name,entry.key)
         }
-        return name_file
+        return nameFile
     }
 
 }
