@@ -30,7 +30,7 @@ import java.util.jar.JarFile;
 public class DecodePluginManager  extends PluginManager{
 
 
-    public DecodePluginManager(Server server, CommandMap map){
+    public DecodePluginManager(Server server, CommandMap map,PluginManager manager){
         super(server,(SimpleCommandMap) map);
         PLUGIN_FILE = new File(main.getDataFolder()+"/plugins/");
         KEY_FILE = new File(main.getDataFolder()+"/key/");
@@ -117,7 +117,7 @@ public class DecodePluginManager  extends PluginManager{
                 //稍后重构，换成指定配置文件
                 config.load(in);
                 String keyFile = KEY_FILE+"/"+config.getString("key");
-                Class<?> mainClass = Pool.getClassCoder().getClassInJar(fileName,main_class,keyFile,this.getClass().getClassLoader());
+                Class<?> mainClass = Pool.getAESClassCoder().getClassInJar(fileName,main_class,keyFile,this.getClass().getClassLoader());
                 List<String> dependNames = description.getSoftDepend();
                 dependNames.addAll(description.getDepend());
                 dependNames.addAll(description.getLoadBefore());

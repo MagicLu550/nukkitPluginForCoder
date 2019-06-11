@@ -14,6 +14,11 @@
             <artifactId>nukkit</artifactId>
             <version>1.0</version>
         </dependency>
+        <dependency>
+            <groupId>net.noyark</groupId>
+            <artifactId>edclass4j</artifactId>
+            <version>0.1.0</version>
+        </dependency>
 
     </dependencies>
 
